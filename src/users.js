@@ -1,5 +1,4 @@
-// users.js
-const users = [
+const mockUsers = [
   {
     login: "octocat",
     avatar_url: "https://avatars.githubusercontent.com/u/583231?v=4",
@@ -102,4 +101,4 @@ const users = [
   },
 ];
 
-export default users;
+export default mockUsers;

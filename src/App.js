@@ -4,12 +4,20 @@ import Header from "./components/Header";
 import SearchInput from "./components/SearchInput";
 import UserList from "./components/UserList";
 import PaginationComponent from "./components/PaginationComponent";
-import users from "./users";
+import Loader from "./components/Loader";
+import useDebounce from "./hooks/useDebounce";
 
 const App = () => {
+  const [users, setUsers] = React.useState([]);
   const [page, setPage] = React.useState(1);
   const [darkMode, setDarkMode] = React.useState(false);
   const [searchValue, setSearchValue] = React.useState("");
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState(null);
+  const [count, setCount] = React.useState(0);
+
+  const debouncedSearchValue = useDebounce(searchValue, 300);
+  const searchString = `https://api.github.com/search/users?per_page=21&page=${page}&q=${debouncedSearchValue}`;
 
   const theme = createTheme({
     palette: {
@@ -33,7 +41,39 @@ const App = () => {
 
   const handleSearchChange = (event) => {
     setSearchValue(event.target.value);
+    setPage(1);
   };
+
+  React.useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        if (!debouncedSearchValue) {
+          setUsers([]);
+          return;
+        }
+        setLoading(true);
+        const response = await fetch(searchString);
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+
+        const { items, total_count } = await response.json();
+        if (total_count > 1000) {
+          setCount(1000);
+        } else {
+          setCount(total_count);
+        }
+
+        setUsers(items);
+      } catch (error) {
+        setError(error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUsers();
+  }, [searchString, debouncedSearchValue]);
 
   return (
     <ThemeProvider theme={theme}>
@@ -55,10 +95,12 @@ const App = () => {
           theme={theme}
         />
 
-        <UserList users={users} />
+        <Loader loading={loading} />
+
+        <UserList users={users} error={error} />
 
         <PaginationComponent
-          count={Math.ceil(users.length / (7 * 3))}
+          count={Math.ceil(count / (7 * 3))}
           page={page}
           onChange={handleChange}
         />

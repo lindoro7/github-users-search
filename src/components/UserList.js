@@ -2,7 +2,10 @@ import React from "react";
 import { Box } from "@mui/material";
 import UserCard from "./UserCard";
 
-const UserList = ({ users }) => {
+const UserList = ({ users, error }) => {
+  if (error) return <div>error.message...</div>;
+  if (users.length === 0)
+    return <div>Пользователи не найдены, попробуйте другой запрос...</div>;
   return (
     <Box
       sx={{
