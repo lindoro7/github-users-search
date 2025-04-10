@@ -101,6 +101,7 @@ const App = () => {
 
         <PaginationComponent
           count={Math.ceil(count / (7 * 3))}
+          users={users}
           page={page}
           onChange={handleChange}
         />
